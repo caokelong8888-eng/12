@@ -1,0 +1,10 @@
+services:
+  app:
+    build: .
+    container_name: ai-jewelry-design
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file: .env
+    volumes:
+      - ./server/data:/app/server/data

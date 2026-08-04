@@ -1,0 +1,31 @@
+{
+  "name": "ai-jewelry-design",
+  "version": "1.0.0",
+  "description": "AI珠宝设计生成器 - 上传裸石照片/手绘图，生成珠宝设计效果图",
+  "main": "server/index.js",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "test": "node scripts/api-test.js",
+    "test:ui": "node scripts/ui-test.js"
+  },
+  "keywords": [
+    "jewelry",
+    "ai",
+    "image-generation"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jpeg-js": "^0.4.4",
+    "jsonwebtoken": "^9.0.3",
+    "pngjs": "^7.0.0",
+    "sql.js": "^1.14.1"
+  },
+  "devDependencies": {
+    "ws": "^8.21.2"
+  }
+}

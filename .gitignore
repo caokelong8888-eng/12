@@ -1,0 +1,9 @@
+node_modules/
+.env
+.env.bak
+server/data/
+generated/
+npm-debug.log*
+*.log
+*.err
+.DS_Store

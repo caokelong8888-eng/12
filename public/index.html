@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#FFFFFF" />
+  <title>AI珠宝设计生成器</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%230071E3' d='M12 2 4 9l8 13 8-13-8-7z'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+  <!-- 顶部导航栏 -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="#0071E3" d="M12 1.8 3.4 9l8.6 13.2L20.6 9 12 1.8Zm0 2.9 4.2 3.6L12 15.9 7.8 8.3 12 4.7Z"/>
+        </svg>
+        <span class="brand-name">AI珠宝设计</span>
+      </div>
+      <div class="topbar-right" id="topbarRight">
+        <!-- 登录后：头像 + 积分；未登录：登录按钮 -->
+      </div>
+    </div>
+  </header>
+
+  <!-- 演示模式提示条 -->
+  <div class="demo-banner" id="demoBanner" hidden>
+    当前为演示模式：未配置 API Key，生成结果为本地模拟效果图。
+  </div>
+
+  <main class="page">
+
+    <!-- 主视觉区：垫图预览 + 生成结果 左右分布 -->
+    <section class="hero" id="hero">
+      <div class="hero-frame">
+        <div class="compare-row">
+          <div class="panel panel-preview">
+            <p class="panel-label">垫图预览</p>
+            <div class="panel-stage preview-stage">
+              <div class="hero-placeholder" id="heroPlaceholder">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="none" stroke="#86868B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                    d="M21 15v3a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-3m5.5-8L12 2.5 16.5 7M12 2.5V16"/>
+                </svg>
+                <p>上传后预览</p>
+              </div>
+              <div class="hero-images" id="heroImages" hidden></div>
+            </div>
+          </div>
+          <div class="panel panel-result">
+            <p class="panel-label">生成效果</p>
+            <div class="panel-stage result-stage" id="resultStage">
+              <div class="result-placeholder" id="resultPlaceholder">
+                <p>上传垫图、选择风格后<br />点击生成</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 上传区 -->
+    <section class="card upload-card">
+      <div class="segmented" id="uploadTypeSeg">
+        <button type="button" class="seg-btn active" data-type="photo">裸石照片</button>
+        <button type="button" class="seg-btn" data-type="drawing">手绘图</button>
+      </div>
+      <div class="upload-tip" id="uploadTip">照片/手绘图将直接作为垫图，不进行抠图处理</div>
+      <label class="coin-toggle">
+        <input type="checkbox" id="coinRef" />
+        <span class="coin-toggle-track" aria-hidden="true"></span>
+        <span class="coin-toggle-label">硬币参照（尺寸更准确）</span>
+      </label>
+      <p class="coin-hint" id="coinHint" hidden>
+        请将裸石与一枚一元硬币放在一起拍摄，帮助AI识别尺寸；生成时AI会自动去除硬币，只保留尺寸比例
+      </p>
+
+      <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="点击上传图片">
+        <input type="file" id="fileInput" accept="image/jpeg,image/png,image/heic,image/heif,image/webp" hidden />
+        <div class="dz-empty" id="dzEmpty">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="none" stroke="#0071E3" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
+              d="M12 16V4m0 0 4 4m-4-4L8 8M4 15v3a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-3"/>
+          </svg>
+          <p class="dz-title" id="dzTitle">点击上传裸石照片</p>
+          <p class="dz-sub">支持 JPG / PNG / HEIC，不压缩图片质量</p>
+        </div>
+        <div class="dz-filled" id="dzFilled" hidden>
+          <img id="dzThumb" alt="已上传图片缩略图" />
+          <div class="dz-meta">
+            <p class="dz-name" id="dzName"></p>
+            <button type="button" class="text-btn" id="dzReplace">重新上传</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 模型选择区 -->
+    <section class="card style-card model-card">
+      <h2 class="section-title">选择生成模型</h2>
+      <div class="tag-row" id="modelRow"></div>
+      <p class="model-note" id="modelNote">模型由 AI 生成引擎提供，不同模型风格略有差异</p>
+    </section>
+
+    <!-- 生成设置区：比例 / 表现风格 / 视图数量 -->
+    <section class="card style-card settings-card">
+      <h2 class="section-title">生成设置</h2>
+      <div class="tag-group">
+        <p class="tag-group-label">图片比例</p>
+        <div class="tag-row" id="ratioRow"></div>
+      </div>
+      <div class="tag-group">
+        <p class="tag-group-label">表现风格</p>
+        <div class="tag-row" id="styleRow"></div>
+      </div>
+      <div class="tag-group">
+        <p class="tag-group-label">视图数量</p>
+        <div class="tag-row" id="viewRow"></div>
+      </div>
+    </section>
+
+    <!-- 风格选择区 -->
+    <section class="card style-card tag-card">
+      <h2 class="section-title">选择风格</h2>
+      <div id="tagGroups" class="tag-groups"><!-- 动态渲染 --></div>
+      <div class="free-text-wrap">
+        <input type="text" class="input" id="freeText"
+          placeholder="补充你的想法，如：配石再大一点、做成花环造型..." maxlength="120" />
+      </div>
+    </section>
+
+    <!-- 操作按钮区 -->
+    <section class="actions">
+      <button type="button" class="btn btn-primary" id="generateBtn">生成 1 张</button>
+      <button type="button" class="btn btn-secondary" id="generate2Btn">生成 2 张</button>
+      <button type="button" class="btn btn-secondary" id="batchBtn">批量生成 4 张</button>
+      <p class="cost-note">生成 1 张消耗 1 积分 · 生成 2 张消耗 2 积分 · 批量 4 张消耗 4 积分</p>
+      <div class="error-bar" id="errorBar" hidden>
+        <span id="errorBarText"></span>
+        <button type="button" class="text-btn" id="errorRetryBtn">重试</button>
+      </div>
+      <details class="prompt-preview">
+        <summary>查看提示词预览</summary>
+        <p id="promptPreview">选择标签后，此处显示将发送给 AI 的提示词</p>
+      </details>
+    </section>
+
+    <!-- 结果展示区 / 历史记录 -->
+    <section class="results" id="resultsSection">
+      <div class="results-head">
+        <h2 class="section-title">生成历史</h2>
+        <button type="button" class="text-btn" id="clearHistory" hidden>清空</button>
+      </div>
+      <p class="history-hint">设计图请及时下载保存，历史记录可能因浏览器清理而丢失</p>
+      <div class="history-grid" id="historyGrid"></div>
+      <div class="history-empty" id="historyEmpty">还没有生成记录，上传图片开始你的第一件设计吧</div>
+      <p class="quality-note">效果图仅供预览参考，裸石边缘可能存在微小误差，实际以工厂制作为准。</p>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>© 2026 AI珠宝设计生成器 · 本工具生成的效果图仅供设计参考</p>
+  </footer>
+
+  <!-- 加载遮罩 -->
+  <div class="loading-mask" id="loadingMask" hidden>
+    <div class="loading-inner">
+      <div class="breath-dot"></div>
+      <p class="loading-text">AI正在为您设计...</p>
+    </div>
+  </div>
+
+  <!-- 登录/注册弹窗 -->
+  <div class="modal-backdrop" id="authModal" hidden>
+    <div class="modal">
+      <button type="button" class="modal-close" data-close="authModal" aria-label="关闭">×</button>
+      <div class="segmented modal-seg" id="authTabs">
+        <button type="button" class="seg-btn active" data-tab="login">登录</button>
+        <button type="button" class="seg-btn" data-tab="register">注册</button>
+      </div>
+      <form id="authForm" class="modal-form" autocomplete="on">
+        <div class="field">
+          <label for="authPhone">手机号</label>
+          <input type="tel" id="authPhone" class="input" placeholder="11 位手机号" maxlength="11" required />
+        </div>
+        <div class="field" id="nicknameField" hidden>
+          <label for="authNickname">昵称（可选）</label>
+          <input type="text" id="authNickname" class="input" placeholder="怎么称呼你" maxlength="20" />
+        </div>
+        <div class="field">
+          <label for="authPassword">密码</label>
+          <input type="password" id="authPassword" class="input" placeholder="至少 6 位" minlength="6" required />
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="authSubmit">登录</button>
+      </form>
+      <button type="button" class="btn btn-secondary btn-block" id="wechatBtn">微信授权登录（模拟）</button>
+      <p class="modal-note" id="authNote">新用户注册即送 3 次免费生成额度</p>
+    </div>
+  </div>
+
+  <!-- 积分购买弹窗 -->
+  <div class="modal-backdrop" id="purchaseModal" hidden>
+    <div class="modal">
+      <button type="button" class="modal-close" data-close="purchaseModal" aria-label="关闭">×</button>
+      <h2 class="modal-title">购买积分</h2>
+      <p class="modal-balance">当前余额：<strong id="purchaseBalance">0</strong> 积分</p>
+      <div class="pkg-list" id="pkgList"><!-- 动态渲染 --></div>
+      <p class="modal-note">演示环境：点击购买直接到账，不产生真实扣款</p>
+    </div>
+  </div>
+
+  <!-- 高清大图查看器 -->
+  <div class="viewer-backdrop" id="viewer" hidden>
+    <div class="viewer-inner">
+      <img id="viewerImg" alt="高清大图" />
+      <div class="viewer-actions">
+        <button type="button" class="btn btn-ghost btn-sm" id="viewerDownload">下载原图</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="viewerUpscale">高清放大 +1积分</button>
+        <button type="button" class="viewer-close" id="viewerClose" aria-label="关闭">×</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
