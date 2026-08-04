@@ -189,6 +189,18 @@ UI 测试通过 Chrome DevTools 协议驱动真实页面，覆盖注册、上传
 
 ### 方式一：云服务器 + PM2（推荐）
 
+服务器装好 Node.js 20 后，拉取代码一键部署：
+
+```bash
+git clone https://github.com/你的用户名/ai-jewelry-design.git
+cd ai-jewelry-design
+bash deploy.sh          # 自动：装依赖 → 生成 .env → 启动 PM2
+vi .env                 # 填入 GEMINI_API_KEY 等真实配置
+pm2 restart ai-jewelry-design
+```
+
+也可以手动执行：
+
 ```bash
 # 1. 安装 Node.js 20（推荐用 nvm 或包管理器）
 node -v
