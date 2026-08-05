@@ -187,6 +187,16 @@ UI 测试通过 Chrome DevTools 协议驱动真实页面，覆盖注册、上传
 
 项目为纯 Node.js 应用（Express 托管前端静态文件 + sql.js 数据库），无原生编译依赖，Node.js 18+ 即可运行。
 
+### 一键初始化（全新 Ubuntu/Debian 服务器）
+
+在服务器上执行一条命令，自动完成：装 Node.js 20 + Git + PM2 + Nginx → 拉取代码 → 部署启动 → 配置反向代理与开机自启：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/caokelong8888-eng/12/main/setup-server.sh -o setup-server.sh && bash setup-server.sh
+```
+
+跑完按提示 `vi /opt/ai-jewelry-design/.env` 填入 `GEMINI_API_KEY`，再 `pm2 restart ai-jewelry-design` 即可上线。
+
 ### 方式一：云服务器 + PM2（推荐）
 
 服务器装好 Node.js 20 后，拉取代码一键部署：
